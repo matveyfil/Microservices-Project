@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+
+# Docker
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp Word/Office files
+~$*
+~WRL*
+*.tmp
+*.tml
+
+# Documents
+*.pdf
+*.doc
+*.docx

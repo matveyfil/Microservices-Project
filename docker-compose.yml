@@ -1,0 +1,138 @@
+version: "3.9"
+
+services:
+
+  # ─── Databases (one per service) ───────────────────────────────────────────
+
+  postgres-order:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: order_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_order_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d order_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres-inventory:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: inventory_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_inventory_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d inventory_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres-billing:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: billing_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_billing_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d billing_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres-reservation:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: reservation_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_reservation_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d reservation_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ─── Message Broker ─────────────────────────────────────────────────────────
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  # ─── Microservices ──────────────────────────────────────────────────────────
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:password@postgres-order:5432/order_db
+      REDIS_URL: redis://redis:6379
+      INVENTORY_SERVICE_URL: http://inventory-service:8002
+      BILLING_SERVICE_URL: http://billing-service:8003
+    depends_on:
+      postgres-order:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  inventory-service:
+    build: ./inventory-service
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:password@postgres-inventory:5432/inventory_db
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres-inventory:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  billing-service:
+    build: ./billing-service
+    ports:
+      - "8003:8003"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:password@postgres-billing:5432/billing_db
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres-billing:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  reservation-service:
+    build: ./reservation-service
+    ports:
+      - "8004:8004"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:password@postgres-reservation:5432/reservation_db
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres-reservation:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  postgres_order_data:
+  postgres_inventory_data:
+  postgres_billing_data:
+  postgres_reservation_data:
