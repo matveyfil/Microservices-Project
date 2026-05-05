@@ -18,3 +18,10 @@ resources:
   - billing-service/service.yaml
   - reservation-service/deployment.yaml
   - reservation-service/service.yaml
+  - istio/gateway.yaml
+  - istio/virtual-services.yaml
+  - istio/destination-rules.yaml
+  - istio/peer-authentication.yaml
+  - istio/authorization-policies.yaml
+  - canary/order-service-v2.yaml
+  - canary/virtual-service-canary.yaml
