@@ -7,5 +7,6 @@ spec:
   selector:
     app: reservation-service
   ports:
-    - port: 8004
+    - name: http
+      port: 8004
       targetPort: 8004

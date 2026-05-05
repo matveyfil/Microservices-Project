@@ -8,11 +8,14 @@ spec:
   selector:
     matchLabels:
       app: billing-service
+      version: v1
   template:
     metadata:
       labels:
         app: billing-service
+        version: v1
     spec:
+      serviceAccountName: billing-service
       containers:
         - name: billing-service
           image: microservices-project-billing-service:latest
@@ -37,3 +40,17 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: REDIS_URL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8003
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8003
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            failureThreshold: 3

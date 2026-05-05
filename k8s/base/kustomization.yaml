@@ -3,6 +3,8 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
+  - secrets.yaml
+  - serviceaccounts.yaml
   - configmap.yaml
   - postgres/statefulset.yaml
   - postgres/service.yaml

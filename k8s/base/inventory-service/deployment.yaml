@@ -8,11 +8,14 @@ spec:
   selector:
     matchLabels:
       app: inventory-service
+      version: v1
   template:
     metadata:
       labels:
         app: inventory-service
+        version: v1
     spec:
+      serviceAccountName: inventory-service
       containers:
         - name: inventory-service
           image: microservices-project-inventory-service:latest
@@ -37,3 +40,17 @@ spec:
                 configMapKeyRef:
                   name: app-config
                   key: REDIS_URL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8002
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8002
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            failureThreshold: 3
