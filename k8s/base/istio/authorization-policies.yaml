@@ -87,6 +87,86 @@ spec:
             principals:
               - "cluster.local/ns/restaurant/sa/order-service"
 ---
+# allow order-service to connect to its postgres
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-order-to-postgres
+  namespace: restaurant
+spec:
+  selector:
+    matchLabels:
+      app: postgres-order
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/restaurant/sa/order-service"
+---
+# allow inventory-service to connect to its postgres
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-inventory-to-postgres
+  namespace: restaurant
+spec:
+  selector:
+    matchLabels:
+      app: postgres-inventory
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/restaurant/sa/inventory-service"
+---
+# allow billing-service to connect to its postgres
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-billing-to-postgres
+  namespace: restaurant
+spec:
+  selector:
+    matchLabels:
+      app: postgres-billing
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/restaurant/sa/billing-service"
+---
+# allow reservation-service to connect to its postgres
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-reservation-to-postgres
+  namespace: restaurant
+spec:
+  selector:
+    matchLabels:
+      app: postgres-reservation
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/restaurant/sa/reservation-service"
+---
+# allow order-service to connect to redis
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-order-to-redis
+  namespace: restaurant
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/restaurant/sa/order-service"
+---
 # allow order-service to call billing-service (saga pattern)
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
