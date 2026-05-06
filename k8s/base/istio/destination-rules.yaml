@@ -10,6 +10,11 @@ spec:
       mode: ISTIO_MUTUAL
     loadBalancer:
       simple: ROUND_ROBIN
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
   subsets:
     - name: v1
       labels:
@@ -30,6 +35,11 @@ spec:
       mode: ISTIO_MUTUAL
     loadBalancer:
       simple: ROUND_ROBIN
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
   subsets:
     - name: v1
       labels:
@@ -47,6 +57,11 @@ spec:
       mode: ISTIO_MUTUAL
     loadBalancer:
       simple: ROUND_ROBIN
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
   subsets:
     - name: v1
       labels:
@@ -64,6 +79,11 @@ spec:
       mode: ISTIO_MUTUAL
     loadBalancer:
       simple: ROUND_ROBIN
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
   subsets:
     - name: v1
       labels:
