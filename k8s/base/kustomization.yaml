@@ -24,5 +24,6 @@ resources:
   - istio/peer-authentication.yaml
   - istio/authorization-policies.yaml
   - istio/tracing.yaml
+  - istio/rate-limiting.yaml
   - canary/order-service-v2.yaml
   - canary/virtual-service-canary.yaml
