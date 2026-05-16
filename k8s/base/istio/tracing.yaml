@@ -6,5 +6,5 @@ metadata:
 spec:
   tracing:
     - providers:
-        - name: zipkin
+        - name: jaeger
       randomSamplingPercentage: 100.0
