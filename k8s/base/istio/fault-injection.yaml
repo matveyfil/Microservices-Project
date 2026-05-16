@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: inventory-service-fault
+  namespace: restaurant
+spec:
+  hosts:
+    - inventory-service
+  http:
+    - fault:
+        delay:
+          percentage:
+            value: 50
+          fixedDelay: 3s
+        abort:
+          percentage:
+            value: 20
+          httpStatus: 503
+      route:
+        - destination:
+            host: inventory-service
+            subset: v1
