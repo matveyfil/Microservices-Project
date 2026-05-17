@@ -18,7 +18,7 @@ Multi-service system for managing restaurant operations including table reservat
 | billing-service | 8003 | Bills and payments |
 | reservation-service | 8004 | Table bookings |
 
-## Running the System
+## Part 1 - Running with Docker Compose
 
 ```bash
 docker-compose up --build -d
@@ -26,6 +26,110 @@ py seed.py
 ```
 
 Seed script adds 6 ingredients and 5 tables. Run it once after first startup.
+
+---
+
+## Part 2 - Kubernetes + Istio
+
+### Requirements
+
+- Docker Desktop
+- [KinD](https://kind.sigs.k8s.io/)
+- [istioctl](https://istio.io/latest/docs/setup/getting-started/)
+- kubectl
+
+> Run all commands in **bash** (Git Bash on Windows) - not PowerShell.
+
+### Setup from scratch
+
+**1. Create cluster:**
+```bash
+kind create cluster --name restaurant
+```
+
+**2. Install Istio:**
+```bash
+istioctl install --set profile=demo -y
+```
+
+**3. Load service images:**
+```bash
+kind load docker-image microservices-project-order-service:latest --name restaurant
+kind load docker-image microservices-project-inventory-service:latest --name restaurant
+kind load docker-image microservices-project-billing-service:latest --name restaurant
+kind load docker-image microservices-project-reservation-service:latest --name restaurant
+```
+
+**4. Install observability addons:**
+```bash
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.26/samples/addons/prometheus.yaml
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.26/samples/addons/jaeger.yaml
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.26/samples/addons/kiali.yaml
+```
+
+**5. Deploy everything:**
+```bash
+kubectl apply -k k8s/overlays/local
+```
+
+### Accessing services
+
+Port-forward ingress gateway:
+```bash
+kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
+```
+
+Then services are available at `http://localhost:8080`:
+- `GET /health` - order-service health
+- `GET /orders` - list orders
+- `GET /items` - inventory items
+- `GET /bills` - bills
+- `GET /tables` - tables
+
+### Accessing observability tools
+
+```bash
+# Kiali - service topology
+kubectl port-forward svc/kiali -n istio-system 20001:20001
+# open http://localhost:20001
+
+# Prometheus - metrics
+kubectl port-forward svc/prometheus -n istio-system 9090:9090
+# open http://localhost:9090
+
+# Jaeger - distributed tracing
+kubectl port-forward svc/tracing -n istio-system 16686:80
+# open http://localhost:16686
+```
+
+### Generate test traffic
+```bash
+for i in {1..50}; do curl -s http://localhost:8080/health; curl -s http://localhost:8080/orders; done
+```
+
+### Test fault injection
+```bash
+# Apply fault injection to inventory-service (50% delay 3s, 20% abort 503)
+kubectl apply -f k8s/base/istio/fault-injection.yaml
+
+# Test - some POST /orders requests will take ~3s
+curl -s -w "%{http_code} %{time_total}s\n" -o /dev/null -X POST http://localhost:8080/orders \
+  -H "Content-Type: application/json" \
+  -d '{"table_id":"1","customer_name":"Test","items":[{"name":"pasta","quantity":1,"price":10}]}'
+
+# Remove after testing
+kubectl delete -f k8s/base/istio/fault-injection.yaml
+```
+
+### Restart existing cluster (after Docker Desktop restart)
+```bash
+docker start restaurant-control-plane
+```
+
+### Delete cluster
+```bash
+kind delete cluster --name restaurant
+```
 
 ## API Docs
 
